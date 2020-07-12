@@ -996,9 +996,13 @@ royale_ros::CameraNodelet::onNewData(const royale::DepthData *data)
   head.stamp = stamp;
   head.frame_id = this->optical_frame_;
 
-  std_msgs::Header cloud_head = std_msgs::Header();
-  cloud_head.stamp = stamp;
-  cloud_head.frame_id = this->sensor_frame_;
+  // ******** Shakeeb's Fork ******************
+
+  //std_msgs::Header cloud_head = std_msgs::Header();
+  //cloud_head.stamp = stamp;
+  //cloud_head.frame_id = this->sensor_frame_;
+
+  // ******************************************
 
   //
   // Publish the intrinsic calibration params.
@@ -1083,9 +1087,9 @@ royale_ros::CameraNodelet::onNewData(const royale::DepthData *data)
       noise_ptr[col] = data->points[i].noise;
 
       // convert to sensor frame
-      pt.x = data->points[i].z;
-      pt.y = -data->points[i].x;
-      pt.z = -data->points[i].y;
+      pt.x = data->points[i].x;
+      pt.y = data->points[i].y;
+      pt.z = data->points[i].z;
       pt.data_c[0] = pt.data_c[1] = pt.data_c[2] = pt.data_c[3] = 0;
       pt.intensity = data->points[i].grayValue;
 
@@ -1102,10 +1106,14 @@ royale_ros::CameraNodelet::onNewData(const royale::DepthData *data)
   sensor_msgs::ImagePtr conf_msg =
     cv_bridge::CvImage(head, enc::TYPE_8UC1, conf_).toImageMsg();
   sensor_msgs::ImagePtr noise_msg =
+
+  // ******** Shakeeb's Fork ******************
     cv_bridge::CvImage(head, enc::TYPE_32FC1, noise_).toImageMsg();
-  cloud_->header = pcl_conversions::toPCL(cloud_head);
+  cloud_->header = pcl_conversions::toPCL(head);
   sensor_msgs::ImagePtr xyz_msg =
-    cv_bridge::CvImage(cloud_head, enc::TYPE_32FC3, xyz_).toImageMsg();
+    cv_bridge::CvImage(head, enc::TYPE_32FC3, xyz_).toImageMsg();
+  // ******************************************
+
 
   //
   // Publish the data
